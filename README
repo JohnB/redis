@@ -1,3 +1,90 @@
+Rube
+
+A superset of Redis.
+
+The aim of this project is to add a simple stack-based assembly language onto the redis server.
+Instead of integer and float registers, we also have string list hash regexp reference stack and queue.
+In addition, we support a small set of concise commands that can manipulate these datatypes and, in turn,
+could be used to build larger commands.
+
+If the underlying language is robust enough, one should be able to implement the entire ruby feature set.
+But I don't recommend it - relying solely on your Ruby skills when the underlying "machine" architecture is fundamentally
+different would be doing a disservice to the underlying Redis data structures.
+
+Implementation Ideas
+--------------------
+Push the entire set of commands onto the stack in reverse order and then eval the stack as if each item was
+an incoming token from the client.
+This allows commands to manipulate or insert any of the future commands (kinda like forth).
+In fact, it could easily be considered to be a layer on top of forth to make it appear to be more procedural
+than it really is.
+
+Rube-related data stored in Redis will be prefixed with "rube::" to namespace it from standard Redis data.
+The 0x0d0a signalling an EOL will be pushed on the stack along with the rest of the code/data,
+to give context to the commands below.
+
+Additional Commands
+-------------------
+  push <value>
+  pop
+  pop_until <token>
+  pop_until_eol
+  <name>= <value>
+  compare <value> <comparator> <value>
+  alias <new_name> <old_name>
+  <location>= <value>
+  method_missing  #
+  eval_after_reboot  #  the code to run on the next reboot
+  eval <stack> # begins a transaction
+  store_until <token>  #
+  def  # begins a transaction
+  begin  # begins a transaction
+  if  #  starts a conditional transaction
+  end  #  closes a transaction
+  ignore_until <token>  #
+  ignore_until_eol
+  = <src_location> <dest_location>
+  +
+  <value>  #  any basic redis object: int string list hash regexp reference
+  @<reference>  #  string at a named location contains the name of the real location
+  <location  #  either an @reference of the name of
+
+
+== WORK == IN == PROGRESS ==
+
+Implemented in C
+----------------
+These commands will be written in C, alongside the existing C-based redis commands:
+  ignore_until
+  eval_until
+  def
+
+Implemented in Rube
+-------------------
+def ignore_until_eol
+  ignore_until 0x0d0a
+end
+
+alias # ignore_until_eol
+
+push
+  
+
+
+
+
+Future Thoughts
+---------------
+- Once written, some of the existing Redis entry points could be rewritten in this assembly language
+- It would essentially be an addition to the existing Redis language, but would eventually supplant it
+when its consistency and simplicity won out over the old Redis.
+
+
+
+
+ORIGINAL REDIS README STARTS BELOW HERE (DUNNO IF NEEDED)
+---------------------------------------------------------
+
 Where to find complete Redis documentation?
 -------------------------------------------
 
